@@ -16,7 +16,7 @@ struct Branch {
     int num_children;
 };
 
-Branch *new_branch(float length, float thickness)
+Branch *new_branch(float length, float thickness, float angle)
 {
     Branch *branch = malloc(sizeof(Branch));
     if (!branch) {
@@ -26,7 +26,7 @@ Branch *new_branch(float length, float thickness)
 
     branch->length = length;
     branch->thickness = thickness;
-    branch->angle = 0;
+    branch->angle = angle;
     branch->num_children = 0;
 
     return branch;
@@ -50,7 +50,7 @@ void add_children(Branch *branch, float ttl)
     int num_children = 2 + random() % (MAX_CHILDREN - 2);
 
     for (int i = 0; i < num_children; i++) {
-        float life = ttl - randf_uniform(0.1, 0.4);
+        float life = ttl - (0.08 + 0.05 / randf());
 
         float length;
         float thickness;
@@ -65,8 +65,7 @@ void add_children(Branch *branch, float ttl)
 
         float angle = (1.0 - 0.7 * life) * M_PI * randf_uniform(-0.5, 0.5);
 
-        Branch *child = new_branch(length, thickness);
-        child->angle = branch->angle - angle;
+        Branch *child = new_branch(length, thickness, branch->angle - angle);
 
         branch->children[i] = child;
         branch->num_children++;
@@ -77,7 +76,7 @@ void add_children(Branch *branch, float ttl)
 
 Branch *make_tree()
 {
-    Branch *root = new_branch(100, 1);
+    Branch *root = new_branch(100, 1, 0);
     add_children(root, 1);
 
     return root;
