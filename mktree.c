@@ -31,29 +31,54 @@ Branch *new_branch(float length, float thickness)
 
     return branch;
 }
-void add_fake_children(Branch *branch, int ttl)
+
+float randf()
 {
-    if (ttl == 0)
-        return;
-
-    Branch *a = new_branch(branch->length * 0.7, branch->thickness * 0.7);
-    a->angle = branch->angle - M_PI / 4.0;
-
-    Branch *b = new_branch(branch->length * 0.6, branch->thickness * 0.9);
-    b->angle = branch->angle + M_PI / 4.0;
-
-    branch->children[0] = a;
-    branch->children[1] = b;
-    branch->num_children = 2;
-
-    add_fake_children(a, ttl - 1);
-    add_fake_children(b, ttl - 1);
+    return (random() % 1000) / 1000.0;
 }
 
-Branch *fake_tree()
+float randf_uniform(float min, float max)
 {
-    Branch *root = new_branch(100, 10);
-    add_fake_children(root, 6);
+    return min + (max - min) * randf();
+}
+
+void add_children(Branch *branch, float ttl)
+{
+    if (ttl <= 0.0)
+        return;
+
+    int num_children = 2 + random() % (MAX_CHILDREN - 2);
+
+    for (int i = 0; i < num_children; i++) {
+        float life = ttl - randf_uniform(0.1, 0.4);
+
+        float length;
+        float thickness;
+
+        if (life < 0) {
+            length = 10;
+            thickness = 1;
+        } else {
+            length = branch->length * 0.7;
+            thickness = branch->thickness * randf_uniform(0.6, 0.7);
+        }
+
+        float angle = (1.0 - 0.7 * life) * M_PI * randf_uniform(-0.5, 0.5);
+
+        Branch *child = new_branch(length, thickness);
+        child->angle = branch->angle - angle;
+
+        branch->children[i] = child;
+        branch->num_children++;
+
+        add_children(child, life);
+    }
+}
+
+Branch *make_tree()
+{
+    Branch *root = new_branch(100, 1);
+    add_children(root, 1);
 
     return root;
 }
@@ -65,22 +90,22 @@ void render_branch(Branch *branch, float x, float y)
 
     float h, s, l;
     if (branch->num_children == 0) {
-        h = 120;
-        s = 100;
-        l = 50;
+        h = randf_uniform(115, 125);
+        s = 80;
+        l = randf_uniform(25, 60);
     } else {
         h = 30;
         s = 75;
         l = 40;
     }
-    
+
     printf(
-            "<line x1='%f' y1='%f' x2='%f' y2='%f'"
-            "stroke='hsl(%f, %f%%, %f%%)'"
+            "<line x1='%f' y1='%f' x2='%f' y2='%f' "
+            "stroke='hsl(%f, %f%%, %f%%)' "
             "stroke-width='%f'/>\n",
             x, y, x2, y2,
             h, s, l,
-            branch->thickness);
+            branch->thickness * 10);
 
     for (int i = 0; i < branch->num_children; i++) {
         render_branch(branch->children[i], x2, y2);
@@ -104,7 +129,7 @@ void render_tree(Branch *tree)
 
 int main(int argc, char *argv[])
 {
-    Branch *tree = fake_tree();
+    Branch *tree = make_tree();
     render_tree(tree);
     return 0;
 }
