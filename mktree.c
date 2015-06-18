@@ -1,8 +1,13 @@
+/*
+ * Copyright 2015 Ben Mather, James Deery
+ * Released under the MIT license
+ * See COPYING for details.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
-
 
 const int MAX_CHILDREN = 5;
 
