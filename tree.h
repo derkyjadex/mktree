@@ -19,5 +19,6 @@ struct Branch {
 };
 
 Branch *make_tree();
+void free_tree(Branch *tree);
 char* render_tree(Branch *tree, size_t *len);
 

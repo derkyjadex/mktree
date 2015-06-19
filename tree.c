@@ -79,6 +79,14 @@ Branch *make_tree()
     return root;
 }
 
+void free_tree(Branch *tree)
+{
+    for (int i = 0; i < tree->num_children; i++) {
+        free_tree(tree->children[i]);
+    }
+    free(tree);
+}
+
 static void concatf(char **a, size_t *a_len, const char *format, ...)
 {
     va_list ap;

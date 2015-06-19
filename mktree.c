@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     size_t len;
     char *result = render_tree(tree, &len);
     printf("%s", result);
+    free_tree(tree);
 
     return 0;
 }
