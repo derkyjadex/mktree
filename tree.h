@@ -4,6 +4,8 @@
  * See COPYING for details.
  */
 
+#include <stdlib.h>
+
 #define MAX_CHILDREN 5
 
 typedef struct Branch Branch;
@@ -17,5 +19,5 @@ struct Branch {
 };
 
 Branch *make_tree();
-void render_tree(Branch *tree);
+char* render_tree(Branch *tree, size_t *len);
 

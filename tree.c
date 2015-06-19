@@ -79,7 +79,32 @@ Branch *make_tree()
     return root;
 }
 
-static void render_branch(Branch *branch, float x, float y)
+static void concatf(char **a, size_t *a_len, const char *format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+
+    char *b;
+    int b_len = vasprintf(&b, format, ap);
+    if (b_len < 0)
+        abort();
+
+    size_t new_a_len = *a_len + b_len;
+    char *new_a = realloc(*a, new_a_len + 1);
+    if (!new_a)
+        abort();
+
+    memcpy(new_a + *a_len, b, b_len);
+    new_a[new_a_len] = '\0';
+    free(b);
+
+    *a = new_a;
+    *a_len = new_a_len;
+
+    va_end(ap);
+}
+
+static void render_branch(char **result, size_t *len, Branch *branch, float x, float y)
 {
     float x2 = x + branch->length * sinf(branch->angle);
     float y2 = y - branch->length * cosf(branch->angle);
@@ -95,31 +120,38 @@ static void render_branch(Branch *branch, float x, float y)
         l = 40;
     }
 
-    printf(
-            "<line x1='%f' y1='%f' x2='%f' y2='%f' "
-            "stroke='hsl(%f, %f%%, %f%%)' "
-            "stroke-width='%f'/>\n",
-            x, y, x2, y2,
-            h, s, l,
-            branch->thickness * 10);
+    concatf(
+        result, len,
+        "<line x1='%f' y1='%f' x2='%f' y2='%f' "
+        "stroke='hsl(%f, %f%%, %f%%)' "
+        "stroke-width='%f'/>\n",
+        x, y, x2, y2,
+        h, s, l,
+        branch->thickness * 10);
 
     for (int i = 0; i < branch->num_children; i++) {
-        render_branch(branch->children[i], x2, y2);
+        render_branch(result, len, branch->children[i], x2, y2);
     }
 }
 
-void render_tree(Branch *tree)
+char *render_tree(Branch *tree, size_t *len)
 {
-    printf(
+    char *result = NULL;
+    *len = 0;
+
+    concatf(
+        &result, len,
         "<?xml version='1.0'?>\n"
-        "<svg version='1.1' width='1000' height='550' xmlns='http://www.w3.org/2000/svg'>\n"
-    );
-    printf("<text x='500' y='520'>Tree!</text>\n");
+        "<svg version='1.1' width='1000' height='550' xmlns='http://www.w3.org/2000/svg'>\n");
+    concatf(
+        &result, len,
+        "<text x='500' y='520'>Tree!</text>\n");
 
-    render_branch(tree, 500, 500);
-    printf(
-        "</svg>"
-    );
+    render_branch(&result, len, tree, 500, 500);
+    concatf(
+        &result, len,
+        "</svg>");
 
+    return result;
 }
 
