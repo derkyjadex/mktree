@@ -44,7 +44,7 @@ static int handle_root(struct mg_connection *conn, void *cbdata)
             conn,
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: image/svg+xml\r\n"
-            "Content-Length: %ld\r\n"
+            "Content-Length: %zu\r\n"
             "Connection: close\r\n"
             "\r\n"
             "%s",

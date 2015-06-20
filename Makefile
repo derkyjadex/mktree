@@ -1,4 +1,9 @@
-CFLAGS += -Wall -std=c11
+CFLAGS += -Wall -std=c99
+
+ifeq ($(shell uname),Linux)
+  CFLAGS += -D_GNU_SOURCE
+  LDLIBS += -lm -pthread -lrt -ldl
+endif
 
 all: tree.svg treeserver
 

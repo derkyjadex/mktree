@@ -13,6 +13,10 @@
 
 #include "tree.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 typedef enum {
     NO_ERROR,
     ERROR
@@ -36,7 +40,7 @@ static Branch *new_branch(float length, float thickness, float angle)
 
 static float randf()
 {
-    return (random() % 1000) / 1000.0;
+    return (rand() % 1000) / 1000.0;
 }
 
 static float randf_uniform(float min, float max)
@@ -49,7 +53,7 @@ static Error add_children(Branch *branch, float ttl)
     if (ttl <= 0.0)
         return NO_ERROR;
 
-    int num_children = 2 + random() % (MAX_CHILDREN - 2);
+    int num_children = 2 + rand() % (MAX_CHILDREN - 2);
 
     for (int i = 0; i < num_children; i++) {
         float life = ttl - (0.08 + 0.05 / randf());
