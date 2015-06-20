@@ -13,6 +13,13 @@
 #include "tree.h"
 #include "civetweb.h"
 
+#ifndef DEFAULT_PORT
+#define DEFAULT_PORT 20185
+#endif
+
+#define TOSTRING_(x) #x
+#define TOSTRING(x) TOSTRING_(x)
+
 static int return_error(struct mg_connection *conn)
 {
     fprintf(stderr, "Error");
@@ -63,7 +70,7 @@ int main(int argc, char *argv[])
     if (argc >= 2) {
         port = argv[1];
     } else {
-        port = "20185";
+        port = TOSTRING(DEFAULT_PORT);
     }
 
     const char *options[] = {
