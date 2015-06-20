@@ -53,18 +53,27 @@ int main(int argc, char *argv[])
     struct mg_callbacks callbacks;
     memset(&callbacks, 0, sizeof(callbacks));
 
+    char *port;
+    if (argc >= 2) {
+        port = argv[1];
+    } else {
+        port = "20185";
+    }
+
     const char *options[] = {
-        "listening_ports", "8000",
+        "listening_ports", port,
         NULL
     };
 
     struct mg_context *ctx = mg_start(&callbacks, NULL, options);
     if (!ctx) {
         fprintf(stderr, "Error starting Civetweb\n");
-        abort();
+        return 1;
     }
 
     mg_set_request_handler(ctx, "/$", handle_root, NULL);
+
+    printf("Listening on port %s\n", port);
 
     while (true) {
         sleep(1000);
