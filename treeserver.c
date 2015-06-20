@@ -1,3 +1,9 @@
+/*
+ * Copyright 2015 James Deery
+ * Released under the MIT license
+ * See COPYING for details.
+ */
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
