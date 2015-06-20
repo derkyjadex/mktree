@@ -56,7 +56,7 @@ static Error add_children(Branch *branch, float ttl)
     int num_children = 2 + rand() % (MAX_CHILDREN - 2);
 
     for (int i = 0; i < num_children; i++) {
-        float life = ttl - (0.08 + 0.05 / randf());
+        float life = ttl - (0.08 + 0.05 / (randf() + 0.001));
 
         float length;
         float thickness;
