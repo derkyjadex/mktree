@@ -11,10 +11,20 @@
 int main(int argc, char *argv[])
 {
     Branch *tree = make_tree();
+    if (!tree) {
+        fprintf(stderr, "Error making tree");
+        return 1;
+    }
+
     size_t len;
     char *result = render_tree(tree, &len);
-    printf("%s", result);
     free_tree(tree);
+    if (!result) {
+        fprintf(stderr, "Error rending tree");
+        return 1;
+    }
+
+    printf("%s", result);
 
     return 0;
 }

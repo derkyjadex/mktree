@@ -13,12 +13,17 @@
 
 #include "tree.h"
 
+typedef enum {
+    NO_ERROR,
+    ERROR
+} Error;
+
 static Branch *new_branch(float length, float thickness, float angle)
 {
     Branch *branch = malloc(sizeof(Branch));
     if (!branch) {
         fprintf(stderr, "Bad malloc!");
-        abort();
+        return NULL;
     }
 
     branch->length = length;
@@ -39,10 +44,10 @@ static float randf_uniform(float min, float max)
     return min + (max - min) * randf();
 }
 
-static void add_children(Branch *branch, float ttl)
+static Error add_children(Branch *branch, float ttl)
 {
     if (ttl <= 0.0)
-        return;
+        return NO_ERROR;
 
     int num_children = 2 + random() % (MAX_CHILDREN - 2);
 
@@ -63,18 +68,29 @@ static void add_children(Branch *branch, float ttl)
         float angle = (1.0 - 0.7 * life) * M_PI * randf_uniform(-0.5, 0.5);
 
         Branch *child = new_branch(length, thickness, branch->angle - angle);
+        if (!child)
+            return ERROR;
 
         branch->children[i] = child;
         branch->num_children++;
 
-        add_children(child, life);
+        if (add_children(child, life) != NO_ERROR)
+            return ERROR;
     }
+
+    return NO_ERROR;
 }
 
 Branch *make_tree()
 {
     Branch *root = new_branch(100, 1, 0);
-    add_children(root, 1);
+    if (!root)
+        return NULL;
+
+    if (add_children(root, 1) != NO_ERROR) {
+        free_tree(root);
+        return NULL;
+    }
 
     return root;
 }
@@ -87,20 +103,27 @@ void free_tree(Branch *tree)
     free(tree);
 }
 
-static void concatf(char **a, size_t *a_len, const char *format, ...)
+static Error concatf(char **a, size_t *a_len, const char *format, ...)
 {
     va_list ap;
     va_start(ap, format);
 
     char *b;
     int b_len = vasprintf(&b, format, ap);
-    if (b_len < 0)
-        abort();
+    va_end(ap);
+
+    if (b_len < 0) {
+        fprintf(stderr, "Bad malloc!");
+        return ERROR;
+    }
 
     size_t new_a_len = *a_len + b_len;
     char *new_a = realloc(*a, new_a_len + 1);
-    if (!new_a)
-        abort();
+    if (!new_a) {
+        free(b);
+        fprintf(stderr, "Bad malloc!");
+        return ERROR;
+    }
 
     memcpy(new_a + *a_len, b, b_len);
     new_a[new_a_len] = '\0';
@@ -109,10 +132,10 @@ static void concatf(char **a, size_t *a_len, const char *format, ...)
     *a = new_a;
     *a_len = new_a_len;
 
-    va_end(ap);
+    return NO_ERROR;
 }
 
-static void render_branch(char **result, size_t *len, Branch *branch, float x, float y)
+static Error render_branch(char **result, size_t *len, Branch *branch, float x, float y)
 {
     float x2 = x + branch->length * sinf(branch->angle);
     float y2 = y - branch->length * cosf(branch->angle);
@@ -128,7 +151,8 @@ static void render_branch(char **result, size_t *len, Branch *branch, float x, f
         l = 40;
     }
 
-    concatf(
+    Error error;
+    error = concatf(
         result, len,
         "<line x1='%f' y1='%f' x2='%f' y2='%f' "
         "stroke='hsl(%f, %f%%, %f%%)' "
@@ -136,29 +160,41 @@ static void render_branch(char **result, size_t *len, Branch *branch, float x, f
         x, y, x2, y2,
         h, s, l,
         branch->thickness * 10);
+    if (error != NO_ERROR)
+        return error;
 
     for (int i = 0; i < branch->num_children; i++) {
-        render_branch(result, len, branch->children[i], x2, y2);
+        error = render_branch(result, len, branch->children[i], x2, y2);
+        if (error != NO_ERROR)
+            return error;
     }
+
+    return NO_ERROR;
 }
 
 char *render_tree(Branch *tree, size_t *len)
 {
     char *result = NULL;
     *len = 0;
+    Error error;
 
-    concatf(
+    error = concatf(
         &result, len,
         "<?xml version='1.0'?>\n"
-        "<svg version='1.1' width='1000' height='550' xmlns='http://www.w3.org/2000/svg'>\n");
-    concatf(
-        &result, len,
+        "<svg version='1.1' width='1000' height='550' xmlns='http://www.w3.org/2000/svg'>\n"
         "<text x='500' y='520'>Tree!</text>\n");
+    if (error != NO_ERROR)
+        return NULL;
 
-    render_branch(&result, len, tree, 500, 500);
-    concatf(
+    error = render_branch(&result, len, tree, 500, 500);
+    if (error != NO_ERROR)
+        return NULL;
+
+    error = concatf(
         &result, len,
         "</svg>");
+    if (error != NO_ERROR)
+        return NULL;
 
     return result;
 }
