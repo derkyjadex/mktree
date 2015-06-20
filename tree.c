@@ -185,12 +185,12 @@ char *render_tree(Branch *tree, size_t *len)
     error = concatf(
         &result, len,
         "<?xml version='1.0'?>\n"
-        "<svg version='1.1' width='1000' height='550' xmlns='http://www.w3.org/2000/svg'>\n"
-        "<text x='500' y='520'>Tree!</text>\n");
+        "<svg version='1.1' width='400' height='400' xmlns='http://www.w3.org/2000/svg'>\n"
+        "<text x='200' y='370' text-anchor='middle'>Tree!</text>\n");
     if (error != NO_ERROR)
         return NULL;
 
-    error = render_branch(&result, len, tree, 500, 500);
+    error = render_branch(&result, len, tree, 200, 350);
     if (error != NO_ERROR)
         return NULL;
 
